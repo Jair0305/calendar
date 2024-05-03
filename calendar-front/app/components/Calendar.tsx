@@ -100,11 +100,15 @@ const Calendar: React.FC<CalendarProps> = ({ initialMonth, initialYear }) => {
                     const today = new Date();
                     const isToday = day.getDate() === today.getDate() && day.getMonth() === today.getMonth() && day.getFullYear() === today.getFullYear();
 
+                    const handleClick = () => {
+                        console.log('Day clickecd:', day, month, year);
+                    }
+
                     return (
                         <div
                             key={index}
-                            className={`border p-2 w-full h-40 ${day.getMonth() + 1 === month ? '' : 'text-gray-500' } ${isToday ? 'day_border' : ''}  `}
-
+                            className={`border p-2 w-full h-28 cursor-pointer  ${day.getMonth() + 1 === month ? '' : 'text-gray-500' } ${isToday ? 'day-border' : ''}  `}
+                            onClick={handleClick}
                         >
                             <span className={isToday ? 'day-number' : ''}>
                                 {day.getDate()}

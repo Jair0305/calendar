@@ -1,6 +1,7 @@
 "use client";
 import React from 'react';
 import Calendar from './components/Calendar';
+//import Navbar from './components/Navbar';
 
 const Page: React.FC = () => {
   const date = new Date();
@@ -9,9 +10,7 @@ const Page: React.FC = () => {
 
   return (
       <main className="">
-          <div className="">
-              <Calendar initialMonth={initialMonth} initialYear={initialYear} />
-          </div>
+          <Calendar initialMonth={initialMonth} initialYear={initialYear} />
       </main>
   );
 };

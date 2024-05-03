@@ -26,8 +26,9 @@
   background-color: red;
   color: #fff;
   text-align: center;
+  cursor: pointer;
 }
-.day_border
+.day-border
 {
   border: 1px solid red;
 }
