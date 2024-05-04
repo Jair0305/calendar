@@ -1,7 +1,8 @@
-CREATE TABLE `locations` (
+CREATE TABLE `location` (
     `id` bigint PRIMARY KEY AUTO_INCREMENT,
-    `name` varchar(100) NOT NULL,
-    `address` varchar(100) NOT NULL,
-    `latitude` double NOT NULL,
-    `longitude` double NOT NULL
+    `place_id` varchar(255),
+    `name` varchar(255),
+    `formatted_address` varchar(255),
+    `latitude` decimal(10,8),
+    `longitude` decimal(11,8)
 );

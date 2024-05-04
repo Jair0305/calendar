@@ -30,4 +30,12 @@ public class Event {
     @JoinColumn(name = "location_id")
     Location location;
 
+    @PrePersist
+    public void prePersist() {
+        this.createdAt = LocalDateTime.now();
+        if(this.updatedAt == null) {
+            this.updatedAt = LocalDateTime.now();
+        }
+    }
+
 }

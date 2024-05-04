@@ -40,12 +40,23 @@ public class EventController {
     @GetMapping
     public ResponseEntity<?> getEvents()
     {
-        return ResponseEntity.ok().body(eventService.findAll());
+        try
+        {
+            return ResponseEntity.ok().body(eventService.findAll());
+        }catch (Exception e) {
+            return ResponseEntity.badRequest().body("Error getting events");
+        }
     }
     @GetMapping("/{id}")
     public ResponseEntity<?> getEvent(@PathVariable Long id)
     {
-        return ResponseEntity.ok().body(eventService.findById(id));
+        try
+        {
+            return ResponseEntity.ok().body(eventService.findById(id));
+
+        }catch (Exception e) {
+            return ResponseEntity.badRequest().body("Error getting event");
+        }
     }
 
     @PutMapping("/{id}")
