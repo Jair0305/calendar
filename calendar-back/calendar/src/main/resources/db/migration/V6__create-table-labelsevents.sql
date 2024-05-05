@@ -8,7 +8,7 @@ CREATE TABLE `labels_events` (
             ON UPDATE CASCADE,
     CONSTRAINT `fk_labels_events_event_id`
         FOREIGN KEY (`event_id`)
-            REFERENCES `event` (`id`)
+            REFERENCES `events` (`id`)
             ON DELETE CASCADE
             ON UPDATE CASCADE,
     PRIMARY KEY (`label_id`, `event_id`)

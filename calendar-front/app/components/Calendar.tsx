@@ -1,4 +1,5 @@
 import React, {useState} from 'react';
+import Modal from "@/app/components/Modal";
 
 type CalendarProps = {
     initialMonth: number;
@@ -71,54 +72,70 @@ const Calendar: React.FC<CalendarProps> = ({ initialMonth, initialYear }) => {
         setMonth(initialMonth);
     }
 
+    const [isOpen, setIsOpen] = useState(false);
+    const [selectedDay, setSelectedDay] = useState(null);
+
+    const openModal = (day) => {
+        setSelectedDay(day);
+        setIsOpen(true);
+    };
+
+    const closeModal = () => {
+        setIsOpen(false);
+    };
+
     return (
-        <div className="flex flex-col gap-4 mx-auto max-w-screen-md">
-            <div className="grid grid-cols-3">
-                <div className="border p-2">
-                    Month:{monthName}
-                    <button onClick={incrementMonth}>arriba</button>
-                    <button onClick={decrementMonth}>abajo</button>
-                </div>
-                <div className="border p-2">
-                    <button onClick={returnPresent}>return to present</button>
-                </div>
-                <div className="border p-2">
-                    Year: {year}
-                    <button onClick={incrementYear}>arriba</button>
-                    <button onClick={decrementYear}>abajo</button>
-                </div>
+    <div className="flex flex-col gap-4 mx-auto max-w-screen-md">
+        <div className="grid grid-cols-3">
+            <div className="border p-2">
+                Month:{monthName}
+                <button onClick={incrementMonth}>arriba</button>
+                <button onClick={decrementMonth}>abajo</button>
             </div>
-            <div className="grid grid-cols-7 gap-4">
-                <div className="border p-2">Sun</div>
-                <div className="border p-2">Mon</div>
-                <div className="border p-2">Tue</div>
-                <div className="border p-2">Wed</div>
-                <div className="border p-2">Thu</div>
-                <div className="border p-2">Fri</div>
-                <div className="border p-2">Sat</div>
-                {days.map((day, index) => {
-                    const today = new Date();
-                    const isToday = day.getDate() === today.getDate() && day.getMonth() === today.getMonth() && day.getFullYear() === today.getFullYear();
-
-                    const handleClick = () => {
-                        console.log('Day clickecd:', day, month, year);
-                    }
-
-                    return (
-                        <div
-                            key={index}
-                            className={`border p-2 w-full h-28 cursor-pointer  ${day.getMonth() + 1 === month ? '' : 'text-gray-500' } ${isToday ? 'day-border' : ''}  `}
-                            onClick={handleClick}
-                        >
-                            <span className={isToday ? 'day-number' : ''}>
-                                {day.getDate()}
-                            </span>
-                        </div>
-                    );
-                })}
+            <div className="border p-2">
+                <button onClick={returnPresent}>return to present</button>
+            </div>
+            <div className="border p-2">
+                Year: {year}
+                <button onClick={incrementYear}>arriba</button>
+                <button onClick={decrementYear}>abajo</button>
             </div>
         </div>
-    );
+        <div className="grid grid-cols-7 gap-4">
+            <div className="border p-2">Sun</div>
+            <div className="border p-2">Mon</div>
+            <div className="border p-2">Tue</div>
+            <div className="border p-2">Wed</div>
+            <div className="border p-2">Thu</div>
+            <div className="border p-2">Fri</div>
+            <div className="border p-2">Sat</div>
+            {days.map((day, index) => {
+                const today = new Date();
+                const isToday = day.getDate() === today.getDate() && day.getMonth() === today.getMonth() && day.getFullYear() === today.getFullYear();
+
+                const handleClick = () => {
+                    console.log('Day clickecd:', day, month, year);
+                }
+
+                return (
+                    <div
+                        key={index}
+                        className={`border p-2 w-full h-28 cursor-pointer  ${day.getMonth() + 1 === month ? '' : 'text-gray-500' } ${isToday ? 'day-border' : ''}  `}
+                        onClick={() => openModal(day)}
+                    >
+                        <span className={isToday ? 'day-number' : ''}>
+                            {day.getDate()}
+                        </span>
+                    </div>
+                );
+            })}
+            <Modal isOpen={isOpen} onClose={closeModal} >
+                <h2>Selected Day</h2>
+                <p>{selectedDay && selectedDay.toDateString()}</p>
+            </Modal>
+        </div>
+    </div>
+);
 };
 
 export default Calendar;

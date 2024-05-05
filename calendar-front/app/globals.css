@@ -16,6 +16,40 @@
   }
 }
 
+.modal-enter {
+  opacity: 0;
+  transform: translateY(-100%) scale(1.5);
+}
+
+.modal-enter-active {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  transition: opacity 300ms, transform 300ms;
+}
+
+.modal-exit {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+.modal-bg {
+  background-color: #333;
+}
+
+.modal-overlay {
+  background-color: rgba(0, 0, 0, 0.7);
+}
+
+.modal {
+  border: 2px solid #444;
+}
+
+.modal-exit-active {
+  opacity: 0;
+  transform: translateY(-100%) scale(1.5);
+  transition: opacity 300ms, transform 300ms;
+}
+
 .day-number
 {
   display: inline-block;

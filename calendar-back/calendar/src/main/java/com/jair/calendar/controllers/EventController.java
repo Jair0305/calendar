@@ -6,6 +6,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
+import java.util.Date;
+
 @RestController
 @RequestMapping("/api/v1/events")
 public class EventController {
@@ -56,6 +59,17 @@ public class EventController {
 
         }catch (Exception e) {
             return ResponseEntity.badRequest().body("Error getting event");
+        }
+    }
+
+    @GetMapping("/date")
+    public ResponseEntity<?> getEventsByDate(@RequestParam LocalDateTime date)
+    {
+        try
+        {
+            return ResponseEntity.ok().body(eventService.findByDate(date));
+        }catch (Exception e) {
+            return ResponseEntity.badRequest().body("Error getting events");
         }
     }
 
