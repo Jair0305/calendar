@@ -7,15 +7,19 @@ import com.jair.calendar.repositories.LocationRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
 public class EventServiceImpl implements EventService {
     @Override
-    public List<Event> findByDate(LocalDateTime date) {
-        return eventRepository.findByDate(date);
+    public List<Event> findByDate(LocalDate date) {
+        LocalDateTime startOfDay = date.atStartOfDay();
+        LocalDateTime startOfNextDay = date.plusDays(1).atStartOfDay();
+        return eventRepository.findByDateBetween(startOfDay, startOfNextDay);
     }
+
 
     @Autowired
     private EventRepository eventRepository;
@@ -40,6 +44,16 @@ public class EventServiceImpl implements EventService {
 
     @Override
     public Event save(Event event, Location location) {
+
+        if(event.isOnline() && (event.getUrl() == null) || event.getUrl().isEmpty()) {
+            throw new IllegalArgumentException("Online events must have a URL");
+        }
+
+        if(!event.isOnline() && event.getLocation() == null)
+        {
+            throw new IllegalArgumentException("In person events must have a location");
+        }
+
         Location existingLocation = locationRepository.findByName(location.getName());
         if (existingLocation != null && existingLocation.equals(location)) {
             event.setLocation(existingLocation);

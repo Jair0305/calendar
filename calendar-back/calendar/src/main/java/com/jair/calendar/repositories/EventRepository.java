@@ -17,4 +17,5 @@ public interface EventRepository extends JpaRepository<Event, Long> {
     List<Event> findByLocation(Location location);
 
     List<Event> findByDate(LocalDateTime date);
+    List<Event> findByDateBetween(LocalDateTime start, LocalDateTime end);
 }

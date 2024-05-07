@@ -12,16 +12,19 @@ const DayInformation: React.FC<DayInformationProps> = ({ selectedDay }) => {
 
     useEffect(() => {
         if (selectedDay) {
-            fetch('http://localhost:8080/api/v1/events', {
+            const formattedDate = selectedDay.toISOString().split('T')[0];
+            console.log(formattedDate)
+            fetch(`http://localhost:8080/api/v1/events/date?date=${formattedDate}`, {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ date: selectedDay.toISOString() }),
-
             })
                 .then((response) => response.json())
-                .then((data) => setEvents(data))
+                .then((data) => {
+                    console.log(data); // Agrega esta línea
+                    setEvents(data);
+                })
                 .catch((error) => console.error('Error:', error));
         }
     }, [selectedDay]);

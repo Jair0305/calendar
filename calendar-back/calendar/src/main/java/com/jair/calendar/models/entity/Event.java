@@ -15,7 +15,7 @@ import java.time.LocalDateTime;
 public class Event {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.AUTO)
     Long id;
 
     String coverPhoto;
@@ -25,6 +25,9 @@ public class Event {
     LocalDateTime createdAt;
     LocalDateTime updatedAt;
     String body;
+
+    String url;
+    boolean isOnline;
 
     @ManyToOne
     @JoinColumn(name = "location_id")

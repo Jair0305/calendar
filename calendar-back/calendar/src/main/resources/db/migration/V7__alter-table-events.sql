@@ -1,0 +1,2 @@
+ALTER TABLE `events` ADD COLUMN `is_Online` TINYINT;
+ALTER TABLE `events` ADD COLUMN `url` VARCHAR(255);

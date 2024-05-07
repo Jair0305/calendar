@@ -2,13 +2,14 @@ import React from 'react';
 import { CSSTransition } from 'react-transition-group';
 import DayInformation from './DayInformation';
 
-type ModalProps = {
+interface ModalProps  {
     isOpen: boolean;
     onClose: () => void;
     selectedDay: Date | null;
+    children?: React.ReactNode;
 };
 
-const Modal: React.FC<ModalProps> = ({ isOpen, onClose, selectedDay }) => {
+const Modal: React.FC<ModalProps> = ({ isOpen, onClose, selectedDay, children }) => {
     const handleBackgroundClick = (e: React.MouseEvent) => {
         if (e.target === e.currentTarget) {
             onClose();
@@ -21,6 +22,7 @@ const Modal: React.FC<ModalProps> = ({ isOpen, onClose, selectedDay }) => {
                 <div className="modal bg-white p-6 rounded shadow-lg w-3/4 h-3/4 overflow-auto modal-bg">
                     <button onClick={onClose}>Close Modal</button>
                     <DayInformation selectedDay={selectedDay} />
+                    {children}
                 </div>
             </div>
         </CSSTransition>

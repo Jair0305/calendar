@@ -4,6 +4,7 @@ import com.jair.calendar.models.entity.Event;
 import com.jair.calendar.models.entity.Location;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -17,5 +18,5 @@ public interface EventService {
     public void deleteById(Long id);
     public List<Event> findByTitle(String title);
     public Event update(Event event);
-    public List<Event> findByDate(LocalDateTime date);
+    public List<Event> findByDate(LocalDate date);
 }
