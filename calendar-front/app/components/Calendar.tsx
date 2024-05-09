@@ -1,5 +1,5 @@
 import React, {useState} from 'react';
-import Modal from "@/app/components/Modal";
+import Sidebar from "@/app/components/Sidebar";
 import { CiCirclePlus } from "react-icons/ci";
 
 type CalendarProps = {
@@ -76,12 +76,12 @@ const Calendar: React.FC<CalendarProps> = ({ initialMonth, initialYear }) => {
     const [isOpen, setIsOpen] = useState(false);
     const [selectedDay, setSelectedDay] = useState(null);
     const [today, setToday] = useState(new Date());
-    const openModal = (day) => {
+    const openSideBar = ({day}: { day: any }) => {
         setSelectedDay(day);
         setIsOpen(true);
     };
 
-    const closeModal = () => {
+    const closeSideBar = () => {
         setIsOpen(false);
     };
 
@@ -116,7 +116,7 @@ const Calendar: React.FC<CalendarProps> = ({ initialMonth, initialYear }) => {
 
                 const handleClick = () => {
                     console.log('Day clickecd:', day);
-                    openModal(day)
+                    openSideBar({day: day})
                     setToday(day);
                 }
 
@@ -132,8 +132,8 @@ const Calendar: React.FC<CalendarProps> = ({ initialMonth, initialYear }) => {
                     </div>
                 );
             })}
-            <Modal isOpen={isOpen} onClose={closeModal} selectedDay={today}>
-            </Modal>
+            <Sidebar isOpen={isOpen} onClose={closeSideBar} selectedDay={today}>
+            </Sidebar>
         </div>
     </div>
 );

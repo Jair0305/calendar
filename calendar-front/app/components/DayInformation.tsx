@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { CiCirclePlus } from "react-icons/ci";
 
 type DayInformationProps = {
     selectedDay: Date | null;
@@ -40,6 +41,7 @@ const DayInformation: React.FC<DayInformationProps> = ({ selectedDay }) => {
             ) : (
                 <p>No events on this day.</p>
             )}
+
         </div>
     );
 };
