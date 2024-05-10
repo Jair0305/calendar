@@ -39,13 +39,8 @@ public class EventServiceImpl implements EventService {
 
     @Override
     public Event save(Event event) {
-        return eventRepository.save(event);
-    }
 
-    @Override
-    public Event save(Event event, Location location) {
-
-        if(event.isOnline() && (event.getUrl() == null) || event.getUrl().isEmpty()) {
+        if(event.isOnline() && ((event.getUrl() == null) || event.getUrl().isEmpty())) {
             throw new IllegalArgumentException("Online events must have a URL");
         }
 
@@ -54,12 +49,15 @@ public class EventServiceImpl implements EventService {
             throw new IllegalArgumentException("In person events must have a location");
         }
 
-        Location existingLocation = locationRepository.findByName(location.getName());
-        if (existingLocation != null && existingLocation.equals(location)) {
-            event.setLocation(existingLocation);
-        } else {
-            Location newLocation = locationRepository.save(location);
-            event.setLocation(newLocation);
+        Location location = event.getLocation();
+        if(location != null) {
+            Location existingLocation = locationRepository.findByName(location.getName());
+            if (existingLocation != null && existingLocation.equals(location)) {
+                event.setLocation(existingLocation);
+            } else {
+                Location newLocation = locationRepository.save(location);
+                event.setLocation(newLocation);
+            }
         }
         return eventRepository.save(event);
     }

@@ -26,7 +26,7 @@ public class EventController {
             eventService.save(event);
             return ResponseEntity.ok().body(event);
         }catch (Exception e) {
-            return ResponseEntity.badRequest().body("Error creating event");
+            return ResponseEntity.badRequest().body("Error creating event" + e.getMessage());
         }
     }
 

@@ -17,8 +17,13 @@ const Modal: React.FC<ModalProps> = ({ isOpen, onClose}) => {
         <CSSTransition in={isOpen} timeout={300} classNames="modal" unmountOnExit>
             <div className="fixed inset-0 flex items-center justify-center z-50 modal-overlay" onClick={handleBackgroundClick}>
                 <div className="relative modal bg-white p-6 rounded shadow-lg w-3/4 h-3/4 overflow-auto modal-bg">
-                    <button onClick={onClose}>Close Modal</button>
-                    <Form />
+                    <div className="flex w-full">
+                        <div className=" w-full sticky top-0 h-full flex flex-col">
+                            <button className="-left-4 absolute -top-4" onClick={onClose}>X</button>
+                            hola
+                        </div>
+                        <Form />
+                    </div>
                 </div>
             </div>
         </CSSTransition>

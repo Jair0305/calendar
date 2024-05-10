@@ -8,6 +8,8 @@ CREATE TABLE `events` (
      `created_at` datetime DEFAULT CURRENT_TIMESTAMP,
      `updated_at` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
      `body` text,
+     `is_Online` TINYINT,
+     `url` VARCHAR(255),
      CONSTRAINT `fk_event_location_id`
          FOREIGN KEY (`location_id`)
              REFERENCES `location` (`id`)
