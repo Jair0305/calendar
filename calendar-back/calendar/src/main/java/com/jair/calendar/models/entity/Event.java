@@ -25,8 +25,8 @@ public class Event {
     LocalDateTime createdAt;
     LocalDateTime updatedAt;
     String body;
-
-    String url;
+    String urlMeeting;
+    String urlEvent;
     boolean isOnline;
 
     @ManyToOne

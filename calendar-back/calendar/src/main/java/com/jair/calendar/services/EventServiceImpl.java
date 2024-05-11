@@ -40,7 +40,7 @@ public class EventServiceImpl implements EventService {
     @Override
     public Event save(Event event) {
 
-        if(event.isOnline() && ((event.getUrl() == null) || event.getUrl().isEmpty())) {
+        if(event.isOnline() && ((event.getUrlEvent() == null) || event.getUrlEvent().isEmpty())) {
             throw new IllegalArgumentException("Online events must have a URL");
         }
 
