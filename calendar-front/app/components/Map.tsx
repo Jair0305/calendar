@@ -98,7 +98,7 @@ function Map(latlong: LatLong) {
             if (status === "OK") {
                 if (results[0]) {
                     const name = results[0].formatted_address;
-                    const newMarker = new google.maps.Marker({
+                    const newMarker = new google.maps.marker.AdvancedMarkerElement({
                         map: map,
                         position: position,
                         title: name
@@ -146,7 +146,7 @@ function Map(latlong: LatLong) {
 
     return (
         <div className="flex flex-col gap-0.5 justify-center items-center">
-            <input ref={placeAutoCompleteRef} type="text" placeholder="Enter a location" className="text-black p-2 rounded-lg w-full" onFocus={(e) => e.target.value == "" ? null : e.target.select()} />
+            <input ref={placeAutoCompleteRef} type="text" placeholder="Enter a location" className="flex h-10 w-full border-none bg-gray-50 dark:bg-zinc-800 text-black dark:text-white shadow-input rounded-md px-3 py-2 text-sm  file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-neutral-400 dark:placeholder-text-neutral-600 focus-visible:outline-none focus-visible:ring-[2px]  focus-visible:ring-neutral-400 dark:focus-visible:ring-neutral-600 disabled:cursor-not-allowed disabled:opacity-50 dark:shadow-[0px_0px_1px_1px_var(--neutral-700)] group-hover/input:shadow-none transition duration-400" onFocus={(e) => e.target.value == "" ? null : e.target.select()} />
             <label className="text-black">{selectedPlace}</label>
             {isLoaded ?
                 <div className="h-[500px] w-[500px]" ref={mapRef} />

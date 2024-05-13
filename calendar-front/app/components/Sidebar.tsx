@@ -9,7 +9,7 @@ interface SidebarProps  {
     onClose: () => void;
     selectedDay: Date | null;
     children?: React.ReactNode;
-};
+}
 
 const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, selectedDay, children }) => {
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -30,7 +30,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, selectedDay, childre
                     <button className="absolute bg-green-900 bottom-0 right-0 mb-8 mr-8 hover:bg-green-950 rounded-full transition-colors p-2" title="Add Event" onClick={() => setIsModalOpen(true)}>
                         <CiCirclePlus className="size-12"/>
                     </button>
-                    <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
+                    <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} selectedDay={selectedDay}>
                     </Modal>
                 </div>
             </div>
