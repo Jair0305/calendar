@@ -1,5 +1,5 @@
 "use client";
-import React, {ChangeEvent} from "react";
+import React, {ChangeEvent, useContext} from "react";
 import {
     IconBrandGithub,
     IconBrandGoogle,
@@ -8,20 +8,30 @@ import {
 import {useRef, useState} from "react";
 import Image from "next/image";
 import Map from "@/app/components/Map";
+import {SelectedPlaceContext} from "@/app/components/SelectedPlaceContext";
 
 interface FormProps {
     selectedDay: Date | null;
+    onClose: () => void;
+    selectedPlace: {
+        placeId: string,
+        name: string,
+        formattedAddress: string,
+        latitude: number,
+        longitude: number,
+    }
 }
 
 interface calendarEvent
 {
     title: string,
+    body: string,
     description: string,
     eventUrl: string,
     meetingUrl: string,
     coverImage: File | null,
     startTime: string,
-    endDateTime: string,
+    endDate: string,
     date: {
         year: number | null,
         month: number | null,
@@ -30,16 +40,24 @@ interface calendarEvent
 }
 
 
-const Form:React.FC<FormProps> = ({selectedDay}) => {
+const Form:React.FC<FormProps> = ({selectedDay, onClose}) => {
 
+    const context = useContext(SelectedPlaceContext);
+
+    if (!context) {
+        throw new Error('useSelectedPlace must be used within a SelectedPlaceProvider');
+    }
+
+    const { selectedPlace, setSelectedPlace } = context;
     const [newCalendarEvent, setNewCalendarEvent] = useState<calendarEvent>({
         title: "",
+        body: "",
         description: "",
         eventUrl: "",
         meetingUrl: "",
         coverImage: null,
         startTime: "",
-        endDateTime: "",
+        endDate: "",
         date: {
             year: null,
             month: null,
@@ -51,12 +69,28 @@ const Form:React.FC<FormProps> = ({selectedDay}) => {
     const [imageFile, setImageFile] = useState<File | null>(null);
 
     const ref = useRef<HTMLInputElement>(null);
-    const handleOnClick = () => {
+    const handleOnClick = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        e.preventDefault();
         if (ref.current) {
             ref.current.click();
             console.log(selectedDay)
         }
     }
+
+    const handleEndDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setNewCalendarEvent({
+            ...newCalendarEvent,
+            endDate: e.target.value,
+        });
+    };
+
+    const handleStartTimeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setNewCalendarEvent({
+            ...newCalendarEvent,
+            startTime: e.target.value,
+        });
+    };
 
     const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
@@ -64,33 +98,51 @@ const Form:React.FC<FormProps> = ({selectedDay}) => {
             setImageFile(file);
         }
     };
-    const handleSubmit = () => {
-        console.log(newCalendarEvent);
-        try{
-            const response = fetch('http://localhost:8080/api/v1/events', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    title: newCalendarEvent.title,
-                    description: newCalendarEvent.description,
-                    eventUrl: newCalendarEvent.eventUrl,
-                    meetingUrl: newCalendarEvent.meetingUrl,
-                    coverImage: newCalendarEvent.coverImage,
-                    startTime: newCalendarEvent.startTime,
-                    endDateTime: newCalendarEvent.endDateTime,
-                    date: {
-                        year: selectedDay?.getFullYear(),
-                        month: selectedDay?.getMonth(),
-                        day: selectedDay?.getDate(),
-                    }
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        const event = {
+            title: newCalendarEvent.title,
+            description: newCalendarEvent.description,
+            urlEvent: newCalendarEvent.eventUrl,
+            urlMeeting: newCalendarEvent.meetingUrl,
+            date: `${selectedDay?.toISOString().split('T')[0]}T${newCalendarEvent.startTime}:00`,
+            endDate: `${newCalendarEvent.endDate.endsWith(':00') ? newCalendarEvent.endDate : newCalendarEvent.endDate + ':00'}`,
+            online: selectedOption === "en-linea" ? true : false,
+            body: newCalendarEvent.body,
+            location: selectedPlace,
+        };
 
-                }),
+
+
+        console.log(event);
+        const formData = new FormData();
+
+        // Convert the event object into a Blob with type 'application/json'
+        const eventBlob = new Blob([JSON.stringify(event)], { type: 'application/json' });
+
+        formData.append('event', eventBlob, 'event.json'); // Append the Blob as 'event.json'
+
+        if (imageFile) { // Check if imageFile is not null
+            formData.append('image', imageFile, imageFile.name);
+        }
+
+        try {
+            const response = await fetch('http://localhost:8080/api/v1/events', {
+                method: 'POST',
+                body: formData
             });
-        }catch(error){
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                console.error('Error:', errorData);
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            onClose();
+
+        } catch (error) {
             console.error('Error:', error);
         }
+
     };
     const [selectedOption, setSelectedOption] = useState("selecciona una modalidad");
 
@@ -100,7 +152,13 @@ const Form:React.FC<FormProps> = ({selectedDay}) => {
     return (
 
         <div className=" w-full h-full  mx-auto rounded-none md:rounded-2xl md:p-8 shadow-input bg-white dark:bg-black grid grid-cols-1 2xl:grid-cols-2">
-            <div className="px-6 sticky top-0">
+            <div className="px-6 sticky top-0 overflow-auto overflow-x-hidden">
+                {/*<h2 className="font-bold text-xl text-neutral-800 dark:text-neutral-200">*/}
+                {/*    Lugar y fecha del evento*/}
+                {/*</h2>*/}
+                {/*<p className="text-neutral-600 text-sm max-w-sm mt-2 dark:text-neutral-300">*/}
+                {/*    Selecciona la modalidad del evento, la fecha y la hora de inicio y finalización*/}
+                {/*</p>*/}
                 <div className="flex flex-col gap-4 p-6">
                     <select
                         className="flex self-center h-10 max-w-[400px] border-none bg-gray-50 dark:bg-zinc-800 text-black dark:text-white shadow-input rounded-md px-3 py-2 text-sm  file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-neutral-400 dark:placeholder-text-neutral-600 focus-visible:outline-none focus-visible:ring-[2px]  focus-visible:ring-neutral-400 dark:focus-visible:ring-neutral-600 disabled:cursor-not-allowed disabled:opacity-50 dark:shadow-[0px_0px_1px_1px_var(--neutral-700)] group-hover/input:shadow-none transition duration-400"
@@ -114,19 +172,21 @@ const Form:React.FC<FormProps> = ({selectedDay}) => {
                             <Map/>
                             <input
                                 className="flex h-10 w-full border-none bg-gray-50 dark:bg-zinc-800 text-black dark:text-white shadow-input rounded-md px-3 py-2 text-sm  file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-neutral-400 dark:placeholder-text-neutral-600 focus-visible:outline-none focus-visible:ring-[2px]  focus-visible:ring-neutral-400 dark:focus-visible:ring-neutral-600 disabled:cursor-not-allowed disabled:opacity-50 dark:shadow-[0px_0px_1px_1px_var(--neutral-700)] group-hover/input:shadow-none transition duration-400"
-                                type="text" placeholder="URL del evento" name="eventUrl"/>
+                                type="text" placeholder="URL del evento" name="eventUrl" value={newCalendarEvent.eventUrl} onChange={(e) => setNewCalendarEvent({...newCalendarEvent, eventUrl: e.target.value})}/>
                             <div className="flex flex-row gap-6 items-center justify-center">
                                 <div className="flex flex-col items-center justify-center">
                                     <label htmlFor="startTime">Start Time</label>
                                     <input
                                         className="flex h-10 w-auto border-none bg-gray-50 dark:bg-zinc-800 text-black dark:text-white shadow-input rounded-md px-3 py-2 text-sm  file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-neutral-400 dark:placeholder-text-neutral-600 focus-visible:outline-none focus-visible:ring-[2px]  focus-visible:ring-neutral-400 dark:focus-visible:ring-neutral-600 disabled:cursor-not-allowed disabled:opacity-50 dark:shadow-[0px_0px_1px_1px_var(--neutral-700)] group-hover/input:shadow-none transition duration-400"
-                                        type="time" placeholder="Hora de inicio" name="startTime"/>
+                                        type="time" placeholder="Hora de inicio" name="startTime" onChange={handleStartTimeChange}/>
                                 </div>
                                 <div className="flex flex-col items-center justify-center">
-                                    <label htmlFor="endDateTime">End Date Time</label>
+                                    <label htmlFor="endDate">End Date Time</label>
                                     <input
                                         className="flex h-10 w-auto border-none bg-gray-50 dark:bg-zinc-800 text-black dark:text-white shadow-input rounded-md px-3 py-2 text-sm  file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-neutral-400 dark:placeholder-text-neutral-600 focus-visible:outline-none focus-visible:ring-[2px]  focus-visible:ring-neutral-400 dark:focus-visible:ring-neutral-600 disabled:cursor-not-allowed disabled:opacity-50 dark:shadow-[0px_0px_1px_1px_var(--neutral-700)] group-hover/input:shadow-none transition duration-400"
-                                        type="datetime-local" placeholder="Fecha y hora de finalización" name="endDateTime"/>
+                                        type="datetime-local" placeholder="Fecha y hora de finalización"
+                                        onChange={handleEndDateChange}
+                                        name="endDate"/>
                                 </div>
                             </div>
                         </div>
@@ -135,23 +195,25 @@ const Form:React.FC<FormProps> = ({selectedDay}) => {
                         <div className="flex flex-col gap-8">
                             <input
                                 className="flex h-10 w-full border-none bg-gray-50 dark:bg-zinc-800 text-black dark:text-white shadow-input rounded-md px-3 py-2 text-sm  file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-neutral-400 dark:placeholder-text-neutral-600 focus-visible:outline-none focus-visible:ring-[2px]  focus-visible:ring-neutral-400 dark:focus-visible:ring-neutral-600 disabled:cursor-not-allowed disabled:opacity-50 dark:shadow-[0px_0px_1px_1px_var(--neutral-700)] group-hover/input:shadow-none transition duration-400"
-                                type="text" placeholder="URL del evento" name="eventUrl"/>
+                                type="text" placeholder="URL del evento" name="eventUrl" value={newCalendarEvent.eventUrl} onChange={(e) => setNewCalendarEvent({...newCalendarEvent, eventUrl: e.target.value})}/>
                             <input
                                 className="flex h-10 w-full border-none bg-gray-50 dark:bg-zinc-800 text-black dark:text-white shadow-input rounded-md px-3 py-2 text-sm  file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-neutral-400 dark:placeholder-text-neutral-600 focus-visible:outline-none focus-visible:ring-[2px]  focus-visible:ring-neutral-400 dark:focus-visible:ring-neutral-600 disabled:cursor-not-allowed disabled:opacity-50 dark:shadow-[0px_0px_1px_1px_var(--neutral-700)] group-hover/input:shadow-none transition duration-400"
-                                type="text" placeholder="URL de la reunión" name="meetingUrl"/>
+                                type="text" placeholder="URL de la reunión" name="meetingUrl" value={newCalendarEvent.meetingUrl} onChange={(e) => setNewCalendarEvent({...newCalendarEvent, meetingUrl: e.target.value})}/>
                             <div className="flex flex-row gap-6 items-center justify-center">
                                 <div className="flex flex-col items-center justify-center">
                                     <label htmlFor="startTime">Start Time</label>
                                     <input
                                         className="flex h-10 w-auto border-none bg-gray-50 dark:bg-zinc-800 text-black dark:text-white shadow-input rounded-md px-3 py-2 text-sm  file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-neutral-400 dark:placeholder-text-neutral-600 focus-visible:outline-none focus-visible:ring-[2px]  focus-visible:ring-neutral-400 dark:focus-visible:ring-neutral-600 disabled:cursor-not-allowed disabled:opacity-50 dark:shadow-[0px_0px_1px_1px_var(--neutral-700)] group-hover/input:shadow-none transition duration-400"
-                                        type="time" placeholder="Hora de inicio" name="startTime"/>
+                                        onChange={handleStartTimeChange} type="time" placeholder="Hora de inicio" name="startTime"/>
                                 </div>
                                 <div className="flex flex-col items-center justify-center">
-                                    <label htmlFor="endDateTime">End Date Time</label>
+                                    <label htmlFor="endDate">End Date Time</label>
                                     <input
                                         className="flex h-10 w-auto border-none bg-gray-50 dark:bg-zinc-800 text-black dark:text-white shadow-input rounded-md px-3 py-2 text-sm  file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-neutral-400 dark:placeholder-text-neutral-600 focus-visible:outline-none focus-visible:ring-[2px]  focus-visible:ring-neutral-400 dark:focus-visible:ring-neutral-600 disabled:cursor-not-allowed disabled:opacity-50 dark:shadow-[0px_0px_1px_1px_var(--neutral-700)] group-hover/input:shadow-none transition duration-400"
                                         type="datetime-local" placeholder="Fecha y hora de finalización"
-                                        name="endDateTime"/>
+                                        onChange={handleEndDateChange}
+                                        name="endDate"/>
+
                                 </div>
                             </div>
                         </div>
@@ -160,14 +222,13 @@ const Form:React.FC<FormProps> = ({selectedDay}) => {
             </div>
             <div className=" p-4 relative overflow-auto overflow-x-hidden">
                 <h2 className="font-bold text-xl text-neutral-800 dark:text-neutral-200">
-                    Welcome to Aceternity
+                    Información del evento
                 </h2>
                 <p className="text-neutral-600 text-sm max-w-sm mt-2 dark:text-neutral-300">
-                    Login to aceternity if you can because we don&apos;t have a login flow
-                    yet
+                    Agrega la información del evento, título, descripción, imagen de portada, etc.
                 </p>
 
-                <div className="my-8" >
+                <form className="my-8" >
                     <div className="flex flex-col md:flex-row space-y-2 md:space-y-0 md:space-x-2 mb-4 justify-center">
 
                         <div className={
@@ -181,7 +242,10 @@ const Form:React.FC<FormProps> = ({selectedDay}) => {
                                 onClick={handleOnClick}
                             >
                                 <input accept="image/*" type="file" className="hidden" ref={ref}
-                                       onChange={handleFileChange}/>
+                                       onChange={handleFileChange}
+                                        onClick={(e) => {e.stopPropagation();}}
+                                />
+
                                 {imageFile ? (
                                     <>
                                         <div
@@ -213,19 +277,20 @@ const Form:React.FC<FormProps> = ({selectedDay}) => {
                         <label htmlFor="title">Title</label>
                         <input
                             className="flex h-10 w-full border-none bg-gray-50 dark:bg-zinc-800 text-black dark:text-white shadow-input rounded-md px-3 py-2 text-sm  file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-neutral-400 dark:placeholder-text-neutral-600 focus-visible:outline-none focus-visible:ring-[2px]  focus-visible:ring-neutral-400 dark:focus-visible:ring-neutral-600 disabled:cursor-not-allowed disabled:opacity-50 dark:shadow-[0px_0px_1px_1px_var(--neutral-700)] group-hover/input:shadow-none transition duration-400"
-                            id="title" placeholder="Event name" type="text" value={newCalendarEvent.title} onChange={(e) => {console.log(e.target.value); setNewCalendarEvent({...newCalendarEvent, title: e.target.value})} }/>
+                            id="title" placeholder="Event name" type="text" value={newCalendarEvent.title} onChange={(e) =>  setNewCalendarEvent({...newCalendarEvent, title: e.target.value}) }/>
                     </div>
                     <div className="mb-4">
                         <label htmlFor="description">Description</label>
                         <textarea
                             className=" resize-none h-36 flex w-full border-none bg-gray-50 dark:bg-zinc-800 text-black dark:text-white shadow-input rounded-md px-3 py-2 text-sm  file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-neutral-400 dark:placeholder-text-neutral-600 focus-visible:outline-none focus-visible:ring-[2px]  focus-visible:ring-neutral-400 dark:focus-visible:ring-neutral-600 disabled:cursor-not-allowed disabled:opacity-50 dark:shadow-[0px_0px_1px_1px_var(--neutral-700)] group-hover/input:shadow-none transition duration-400"
-                            id="description" placeholder="set event description, max 400 characters" maxLength={400}/>
+                            id="description" placeholder="set event description, max 400 characters" maxLength={400} value={newCalendarEvent.description} onChange={(e) => setNewCalendarEvent({...newCalendarEvent, description: e.target.value})} />
                     </div>
                     <div className="mb-4">
                         <label htmlFor="body">Body</label>
                         <textarea className=" resize-none h-56 flex  w-full border-none bg-gray-50 dark:bg-zinc-800 text-black dark:text-white shadow-input rounded-md px-3 py-2 text-sm  file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-neutral-400 dark:placeholder-text-neutral-600 focus-visible:outline-none focus-visible:ring-[2px]  focus-visible:ring-neutral-400 dark:focus-visible:ring-neutral-600 disabled:cursor-not-allowed disabled:opacity-50 dark:shadow-[0px_0px_1px_1px_var(--neutral-700)] group-hover/input:shadow-none transition duration-400"
                                id="body"
                                placeholder="Set event body, explain what the event is about, content, etc."
+                                  value={newCalendarEvent.body} onChange={(e) => setNewCalendarEvent({...newCalendarEvent, body: e.target.value})}
                         />
                     </div>
                     {/*<div className="mb-8">*/}
@@ -279,7 +344,7 @@ const Form:React.FC<FormProps> = ({selectedDay}) => {
                     {/*            <BottomGradient />*/}
                     {/*        </button>*/}
                     {/*    </div>*/}
-                </div>
+                </form>
             </div>
         </div>
 

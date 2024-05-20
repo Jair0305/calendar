@@ -1,8 +1,7 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { LatLong } from '@/types';
+import React, { useEffect, useRef, useState, useContext } from 'react';
 import { useJsApiLoader } from '@react-google-maps/api';
 import { Library } from "@googlemaps/js-api-loader";
-import { Input } from "postcss";
+import  { SelectedPlaceContext } from "./SelectedPlaceContext";
 
 const libs: Library[] = ["core", "maps", "places", "marker"]
 
@@ -14,13 +13,18 @@ const buildMapInfoCardContent = (title: string, body: string) => {
         </div>
     `
 }
-
-function Map(latlong: LatLong) {
+function Map() {
 
     const [map, setMap] = useState<google.maps.Map | null>(null);
     const [autoComplete, setAutoComplete] = useState<google.maps.places.Autocomplete | null>(null);
-    const [marker, setMarker] = useState<google.maps.marker.AdvancedMarkerElement | null>(null); // single marker state
-    const [selectedPlace, setSelectedPlace] = useState<string | null>(null);
+    const [marker, setMarker] = useState<google.maps.Marker | null>(null); // single marker state
+    const context = useContext(SelectedPlaceContext);
+
+    if (!context) {
+        throw new Error('useSelectedPlace must be used within a SelectedPlaceProvider');
+    }
+
+    const { selectedPlace, setSelectedPlace } = context;
 
     const { isLoaded } = useJsApiLoader({
         googleMapsApiKey: "AIzaSyAf5IiKjD5eRO8zfEXVpeW3nHJ9Pnz2Tfk",
@@ -64,7 +68,14 @@ function Map(latlong: LatLong) {
         if (autoComplete) {
             autoComplete.addListener('place_changed', () => {
                 const place = autoComplete.getPlace();
-                setSelectedPlace(place.formatted_address as string);
+                setSelectedPlace({
+                    placeId: place.place_id!,
+                    formattedAddress: place.formatted_address!,
+                    longitude: place.geometry?.location?.lng()!,
+                    latitude: place.geometry?.location?.lat()!,
+                    name: place.name!
+
+                });
                 const position = place.geometry?.location;
 
                 if (position && map) {
@@ -84,7 +95,7 @@ function Map(latlong: LatLong) {
         };
     }, [marker]);
 
-    function setSingleMarker(position: google.maps.LatLng) {
+    function setSingleMarker(position: google.maps.LatLng, name: string) {
         if (!map) return;
 
         // Clear existing marker
@@ -96,9 +107,9 @@ function Map(latlong: LatLong) {
         const geocoder = new google.maps.Geocoder();
         geocoder.geocode({ location: position }, (results, status) => {
             if (status === "OK") {
-                if (results[0]) {
+                if (results) {
                     const name = results[0].formatted_address;
-                    const newMarker = new google.maps.marker.AdvancedMarkerElement({
+                    const newMarker = new google.maps.Marker({
                         map: map,
                         position: position,
                         title: name
@@ -131,10 +142,31 @@ function Map(latlong: LatLong) {
     useEffect(() => {
         // Handle click on the map to set marker
         if (map) {
-            const clickListener = map.addListener('click', (event) => {
+            const clickListener = map.addListener('click', (event:google.maps.MapMouseEvent) => {
                 const clickedPosition = event.latLng;
                 const clickedName = "New Marker";
-                setSingleMarker(clickedPosition, clickedName);
+                if (clickedPosition) {
+                    setSingleMarker(clickedPosition, clickedName);
+                    const geocoder = new google.maps.Geocoder();
+                    geocoder.geocode({ location: clickedPosition }, (results, status) => {
+                        if (status === "OK") {
+                            if (results) {
+                                const newPlace = results[0];
+                                setSelectedPlace({
+                                    placeId: newPlace.place_id,
+                                    formattedAddress: newPlace.formatted_address,
+                                    latitude: clickedPosition.lat(),
+                                    longitude: clickedPosition.lng(),
+                                    name: newPlace.formatted_address
+                                });
+                            } else {
+                                console.error("No results found");
+                            }
+                        } else {
+                            console.error("Geocoder failed due to: " + status);
+                        }
+                    });
+                }
             });
 
             // Remove the event listener when the component unmounts to avoid memory leaks
@@ -147,7 +179,7 @@ function Map(latlong: LatLong) {
     return (
         <div className="flex flex-col gap-0.5 justify-center items-center">
             <input ref={placeAutoCompleteRef} type="text" placeholder="Enter a location" className="flex h-10 w-full border-none bg-gray-50 dark:bg-zinc-800 text-black dark:text-white shadow-input rounded-md px-3 py-2 text-sm  file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-neutral-400 dark:placeholder-text-neutral-600 focus-visible:outline-none focus-visible:ring-[2px]  focus-visible:ring-neutral-400 dark:focus-visible:ring-neutral-600 disabled:cursor-not-allowed disabled:opacity-50 dark:shadow-[0px_0px_1px_1px_var(--neutral-700)] group-hover/input:shadow-none transition duration-400" onFocus={(e) => e.target.value == "" ? null : e.target.select()} />
-            <label className="text-black">{selectedPlace}</label>
+            <label className="text-black">{selectedPlace.name}</label>
             {isLoaded ?
                 <div className="h-[500px] w-[500px]" ref={mapRef} />
                 : <p>Loading...</p>

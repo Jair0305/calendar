@@ -26,7 +26,7 @@ const Modal: React.FC<ModalProps> = ({ isOpen, onClose, selectedDay}) => {
             <div className="fixed inset-0 flex items-center justify-center z-50 modal-overlay" onClick={handleBackgroundClick}>
                 <div className="relative modal bg-white p-6 rounded shadow-lg w-3/4 h-3/4 modal-bg overflow-hidden">
                     <button className="left-2 absolute top-2 font-bold" onClick={onClose}>X</button>
-                    <Form selectedDay={selectedDay}/>
+                    <Form selectedDay={selectedDay} onClose={onClose}/>
                 </div>
             </div>
         </CSSTransition>

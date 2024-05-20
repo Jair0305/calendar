@@ -1,5 +1,6 @@
 package com.jair.calendar.models.entity;
 
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -12,6 +13,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @Entity
 @Table(name = "events")
+@JsonDeserialize
 public class Event {
 
     @Id
@@ -27,11 +29,16 @@ public class Event {
     String body;
     String urlMeeting;
     String urlEvent;
-    boolean isOnline;
+    boolean online;
+    String endDate;
 
     @ManyToOne
     @JoinColumn(name = "location_id")
     Location location;
+
+    public boolean getOnline() {
+        return online;
+    }
 
     @PrePersist
     public void prePersist() {

@@ -1,12 +1,16 @@
-package com.jair.calendar.services;
+package com.jair.calendar.services.impl;
 
 import com.jair.calendar.models.entity.Event;
 import com.jair.calendar.models.entity.Location;
 import com.jair.calendar.repositories.EventRepository;
 import com.jair.calendar.repositories.LocationRepository;
+import com.jair.calendar.services.EventService;
+import com.jair.calendar.services.S3Service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -25,6 +29,9 @@ public class EventServiceImpl implements EventService {
     private EventRepository eventRepository;
 
     @Autowired
+    private S3Service s3Service;
+
+    @Autowired
     private LocationRepository locationRepository;
 
     @Override
@@ -38,13 +45,17 @@ public class EventServiceImpl implements EventService {
     }
 
     @Override
-    public Event save(Event event) {
+    public Event save(Event event, MultipartFile file) throws IOException {
 
-        if(event.isOnline() && ((event.getUrlEvent() == null) || event.getUrlEvent().isEmpty())) {
+        String filename = file.getOriginalFilename();
+        s3Service.uploadFile(file);
+        String url = s3Service.getFileUrl(filename);
+
+        if(event.getOnline() && ((event.getUrlEvent() == null) || event.getUrlEvent().isEmpty())) {
             throw new IllegalArgumentException("Online events must have a URL");
         }
 
-        if(!event.isOnline() && event.getLocation() == null)
+        if(!event.getOnline() && event.getLocation() == null)
         {
             throw new IllegalArgumentException("In person events must have a location");
         }
@@ -59,7 +70,10 @@ public class EventServiceImpl implements EventService {
                 event.setLocation(newLocation);
             }
         }
+
+        event.setCoverPhoto(url);
         return eventRepository.save(event);
+
     }
     @Override
     public void deleteById(Long id) {

@@ -2,9 +2,12 @@ package com.jair.calendar.controllers;
 
 import com.jair.calendar.models.entity.Event;
 import com.jair.calendar.services.EventService;
+import com.jair.calendar.services.S3Service;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -18,12 +21,13 @@ public class EventController {
     @Autowired
     private EventService eventService;
 
-    @PostMapping
-    public ResponseEntity<?> createEvent(@RequestBody Event event)
+
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> createEvent(@RequestPart("event") Event event, @RequestPart("image")MultipartFile image)
     {
         try
         {
-            eventService.save(event);
+            eventService.save(event, image);
             return ResponseEntity.ok().body(event);
         }catch (Exception e) {
             return ResponseEntity.badRequest().body("Error creating event" + e.getMessage());

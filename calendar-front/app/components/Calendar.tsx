@@ -1,6 +1,7 @@
 import React, {useState} from 'react';
 import Sidebar from "@/app/components/Sidebar";
 import { CiCirclePlus } from "react-icons/ci";
+import {SelectedPlaceContext} from "./SelectedPlaceContext";
 
 type CalendarProps = {
     initialMonth: number;
@@ -32,6 +33,14 @@ function getDaysInMonth(month: number, year: number) {
 }
 
 const Calendar: React.FC<CalendarProps> = ({ initialMonth, initialYear }) => {
+
+    const [selectedPlace, setSelectedPlace] = useState({
+        placeId: "",
+        name: "",
+        formattedAddress: "",
+        latitude: 0,
+        longitude: 0,
+    });
 
     const [month, setMonth] = useState(initialMonth);
     const [year, setYear] = useState(initialYear);
@@ -86,57 +95,59 @@ const Calendar: React.FC<CalendarProps> = ({ initialMonth, initialYear }) => {
     };
 
     return (
-    <div className="flex flex-col gap-4 mx-auto max-w-screen-md">
-        <div className="grid grid-cols-3">
-            <div className="border p-2 flex gap-2   ">
-                <button onClick={incrementMonth}>{`<`}</button>
-                    Month:{monthName}
-                <button onClick={decrementMonth}>{`>`}</button>
+    <SelectedPlaceContext.Provider value={{selectedPlace, setSelectedPlace}}>
+        <div className="flex flex-col gap-4 mx-auto max-w-screen-md">
+            <div className="grid grid-cols-3">
+                <div className="border p-2 flex gap-2   ">
+                    <button onClick={incrementMonth}>{`<`}</button>
+                        Month:{monthName}
+                    <button onClick={decrementMonth}>{`>`}</button>
+                </div>
+                <div className="border p-2">
+                    <button onClick={returnPresent}>return to present</button>
+                </div>
+                <div className="border p-2 flex gap-2">
+                    <button onClick={incrementYear}>{`<`}</button>
+                        Year: {year}
+                    <button onClick={decrementYear}>{`>`}</button>
+                </div>
             </div>
-            <div className="border p-2">
-                <button onClick={returnPresent}>return to present</button>
-            </div>
-            <div className="border p-2 flex gap-2">
-                <button onClick={incrementYear}>{`<`}</button>
-                    Year: {year}
-                <button onClick={decrementYear}>{`>`}</button>
+            <div className="grid grid-cols-7 gap-4">
+                <div className="border p-2">Sun</div>
+                <div className="border p-2">Mon</div>
+                <div className="border p-2">Tue</div>
+                <div className="border p-2">Wed</div>
+                <div className="border p-2">Thu</div>
+                <div className="border p-2">Fri</div>
+                <div className="border p-2">Sat</div>
+                {days.map((day, index) => {
+                    const today = new Date();
+                    const isToday = day.getDate() === today.getDate() && day.getMonth() === today.getMonth() && day.getFullYear() === today.getFullYear();
+
+                    const handleClick = () => {
+                        console.log('Day clickecd:', day);
+                        openSideBar({day: day})
+                        setToday(day);
+                    }
+
+                    return (
+                        <div
+                            key={index}
+                            className={`border p-2 w-full h-28 cursor-pointer  ${day.getMonth() + 1 === month ? '' : 'text-gray-500' } ${isToday ? 'day-border' : ''}  `}
+                            onClick={() => handleClick()}
+                        >
+                            <span className={isToday ? 'day-number' : ''}>
+                                {day.getDate()}
+                            </span>
+                        </div>
+                    );
+                })}
+                <Sidebar isOpen={isOpen} onClose={closeSideBar} selectedDay={today}>
+                </Sidebar>
             </div>
         </div>
-        <div className="grid grid-cols-7 gap-4">
-            <div className="border p-2">Sun</div>
-            <div className="border p-2">Mon</div>
-            <div className="border p-2">Tue</div>
-            <div className="border p-2">Wed</div>
-            <div className="border p-2">Thu</div>
-            <div className="border p-2">Fri</div>
-            <div className="border p-2">Sat</div>
-            {days.map((day, index) => {
-                const today = new Date();
-                const isToday = day.getDate() === today.getDate() && day.getMonth() === today.getMonth() && day.getFullYear() === today.getFullYear();
-
-                const handleClick = () => {
-                    console.log('Day clickecd:', day);
-                    openSideBar({day: day})
-                    setToday(day);
-                }
-
-                return (
-                    <div
-                        key={index}
-                        className={`border p-2 w-full h-28 cursor-pointer  ${day.getMonth() + 1 === month ? '' : 'text-gray-500' } ${isToday ? 'day-border' : ''}  `}
-                        onClick={() => handleClick()}
-                    >
-                        <span className={isToday ? 'day-number' : ''}>
-                            {day.getDate()}
-                        </span>
-                    </div>
-                );
-            })}
-            <Sidebar isOpen={isOpen} onClose={closeSideBar} selectedDay={today}>
-            </Sidebar>
-        </div>
-    </div>
-);
+    </SelectedPlaceContext.Provider>
+    );
 };
 
 export default Calendar;
