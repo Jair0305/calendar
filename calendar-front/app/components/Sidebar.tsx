@@ -27,11 +27,13 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, selectedDay, childre
                     <button onClick={onClose}>Close Sidebar </button>
                     <DayInformation selectedDay={selectedDay} />
                     {children}
-                    <button className="absolute bg-green-900 bottom-0 right-0 mb-8 mr-8 hover:bg-green-950 rounded-full transition-colors p-2" title="Add Event" onClick={() => setIsModalOpen(true)}>
-                        <CiCirclePlus className="size-12"/>
-                    </button>
                     <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} selectedDay={selectedDay}>
                     </Modal>
+                    <div className="absolute bottom-0 right-0">
+                        <button className="absolute bg-green-900 bottom-0 right-0 mb-8 mr-8 hover:bg-green-950 rounded-full transition-colors p-2" title="Add Event" onClick={() => setIsModalOpen(true)}>
+                            <CiCirclePlus className="size-12"/>
+                        </button>
+                    </div>
                 </div>
             </div>
         </CSSTransition>

@@ -16,6 +16,14 @@
   }
 }
 
+.day-with-event {
+  background-color: indianred;
+}
+
+.day-with-past-event {
+  background-color: lightgray;
+}
+
 .modal-enter {
   opacity: 0;
   transform: translateY(-100%) scale(1.5);

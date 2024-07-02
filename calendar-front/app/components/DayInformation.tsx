@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from 'react';
-
+import EventCard from './EventCard';
 type DayInformationProps = {
     selectedDay: Date | null;
 };
+
+
 
 type Event = {
     id: number;
@@ -17,7 +19,13 @@ type Event = {
     urlEvent: string;
     online: boolean;
     endDate: string;
-    location: string | null;
+    location: {
+        placeId: string;
+        name: string;
+        formattedAddress: string;
+        latitude: number;
+        longitude: number;
+    } | null;
 };
 
 const DayInformation: React.FC<DayInformationProps> = ({ selectedDay }) => {
@@ -41,16 +49,15 @@ const DayInformation: React.FC<DayInformationProps> = ({ selectedDay }) => {
     return (
         <div>
             <h2>Events on {selectedDay?.toDateString()}</h2>
-            {events.length > 0 ? (
-                events.map((event, index) => (
-                    <div key={index}>
-                        <h3>{event.title}</h3>
-                        <p>{event.description}</p>
-                    </div>
-                ))
-            ) : (
-                <p>No events on this day.</p>
-            )}
+            <div className={'flex flex-col gap-4'}>
+                {events.length > 0 ? (
+                    events.map((event) => (
+                        <EventCard key={event.id} event={event} />
+                    ))
+                ) : (
+                    <p>No events on this day.</p>
+                )}
+            </div>
         </div>
     );
 };

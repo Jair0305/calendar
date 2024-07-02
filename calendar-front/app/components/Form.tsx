@@ -9,6 +9,7 @@ import {useRef, useState} from "react";
 import Image from "next/image";
 import Map from "@/app/components/Map";
 import {SelectedPlaceContext} from "@/app/components/SelectedPlaceContext";
+import {EventsContext} from "./EventsContext";
 
 interface FormProps {
     selectedDay: Date | null;
@@ -44,9 +45,17 @@ const Form:React.FC<FormProps> = ({selectedDay, onClose}) => {
 
     const context = useContext(SelectedPlaceContext);
 
+    const eventsContext = useContext(EventsContext);
+
+    if (!eventsContext) {
+        throw new Error('useEvents must be used within a EventsContextProvider');
+    }
+
+    const { addEvent } = eventsContext;
     if (!context) {
         throw new Error('useSelectedPlace must be used within a SelectedPlaceProvider');
     }
+
 
     const { selectedPlace, setSelectedPlace } = context;
     const [newCalendarEvent, setNewCalendarEvent] = useState<calendarEvent>({
@@ -110,6 +119,10 @@ const Form:React.FC<FormProps> = ({selectedDay, onClose}) => {
             online: selectedOption === "en-linea" ? true : false,
             body: newCalendarEvent.body,
             location: selectedPlace,
+            // Add the missing properties here
+            coverPhoto: "", // Replace with actual coverPhoto value
+            createdAt: new Date().toISOString(), // Current date and time as a placeholder
+            updatedAt: new Date().toISOString(), // Current date and time as a placeholder
         };
 
 
@@ -137,6 +150,7 @@ const Form:React.FC<FormProps> = ({selectedDay, onClose}) => {
                 console.error('Error:', errorData);
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
+            addEvent(event);
             onClose();
 
         } catch (error) {
